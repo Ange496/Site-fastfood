@@ -1,3 +1,54 @@
+<?php
+include 'connexion.php';
+
+if ($_SERVER["REQUEST_METHOD"] == "POST") {
+    $nom_du_livreur = mysqli_real_escape_string($conn, $_POST["nom"]);
+    $telephone_du_livreur = mysqli_real_escape_string($conn, $_POST["tel"]);
+    $disponibilite_du_livreur = mysqli_real_escape_string($conn, $_POST["disponibilite"]);
+    $log_livreur = mysqli_real_escape_string($conn, $_POST["login"]);
+    $mot_de_passe_livreur = mysqli_real_escape_string($conn, $_POST["mot_de_pass"]);
+    $moyen_de_transport_livreur = mysqli_real_escape_string($conn, $_POST["moyen_transport"]);
+    $numero_plaque_livreur = mysqli_real_escape_string($conn, $_POST["numero_plaque"]);
+    $type_piece_livreur = mysqli_real_escape_string($conn, $_POST["type_piece"]);
+    $numero_piece_livreur = mysqli_real_escape_string($conn, $_POST["numero_piece"]);
+    $nom_quartier = mysqli_real_escape_string($conn, $_POST["nom_quartier"]);
+
+    // Gestion des fichiers uploadés
+    $upload_directory = 'uploads/';
+    if (!is_dir($upload_directory)) {
+        mkdir($upload_directory, 0777, true);
+    }
+
+    $photo_livreur = $_FILES["photo_livreur"]["name"];
+    $photo_moyen_transport_livreur = $_FILES["photo_moyen_transport"]["name"];
+
+    $photo_livreur_path = $upload_directory . basename($photo_livreur);
+    $photo_moyen_transport_livreur_path = $upload_directory . basename($photo_moyen_transport_livreur);
+
+    // Vérification et déplacement des fichiers
+    if (move_uploaded_file($_FILES["photo_livreur"]["tmp_name"], $photo_livreur_path) && 
+        move_uploaded_file($_FILES["photo_moyen_transport"]["tmp_name"], $photo_moyen_transport_livreur_path)) {
+        
+        // Insérer le livreur dans la base de données
+        $sql = "INSERT INTO livreur (nom_du_livreur, telephone_du_livreur, disponibilite_du_livreur, log_livreur, mot_de_passe_livreur, moyen_de_transport_livreur, numero_plaque_livreur, photo_livreur, type_piece_livreur, numero_piece_livreur, photo_moyen_transport_livreur, nom_quartier)
+                VALUES ('$nom_du_livreur', '$telephone_du_livreur', '$disponibilite_du_livreur', '$log_livreur', '$mot_de_passe_livreur', '$moyen_de_transport_livreur', '$numero_plaque_livreur', '$photo_livreur', '$type_piece_livreur', '$numero_piece_livreur', '$photo_moyen_transport_livreur', '$nom_quartier')";
+
+        if ($conn->query($sql) === TRUE) {
+            // Récupérer l'ID généré
+            $id_livreur = $conn->insert_id;
+
+            echo "Inscription réussie ! Votre ID livreur est : <strong>$id_livreur</strong>";
+        } else {
+            echo "Erreur: " . $sql . "<br>" . $conn->error;
+        }
+    } else {
+        echo "Erreur lors du téléchargement des fichiers.";
+    }
+
+    $conn->close();
+}
+?>
+
 <!DOCTYPE html>
 <html lang="fr">
 <head>
